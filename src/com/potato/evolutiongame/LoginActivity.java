@@ -1,6 +1,6 @@
 package com.potato.evolutiongame;
 
-import com.potato.evolutiongame.game.Card;
+import com.potato.evolutiongame.game.cards.Deck;
 
 import android.os.Bundle;
 import android.widget.TextView;
@@ -8,7 +8,6 @@ import android.widget.Toast;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -30,7 +29,7 @@ public class LoginActivity extends Activity {
 		try
 		{
 			Communicator.Initialize();
-			Card.Initialize(getApplicationContext());
+			Deck.Initialize(getApplicationContext());
 		}
 		catch(Exception e){}
 	}

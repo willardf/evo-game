@@ -51,7 +51,7 @@ public class GameChooseActivity extends Activity {
 			populateTheirTurnSpinner();
 			populateYourTurnSpinner();
 		} catch (IOException e) {
-			Toast.makeText(this, "An error occurred.", Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "An error occurred while fetching games.", Toast.LENGTH_SHORT).show();
 		}
 	}
 	private void populateYourTurnSpinner()
@@ -105,6 +105,7 @@ public class GameChooseActivity extends Activity {
 		}
 		finally
 		{
+			s.setYourTurn(e.isYourTurn());
 			Intent i = new Intent(this, GameScreenActivity.class);
 			i.putExtra("GAMESTATE", s);
 			startActivity(i);

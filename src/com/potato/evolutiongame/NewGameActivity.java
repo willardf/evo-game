@@ -31,12 +31,6 @@ public class NewGameActivity extends Activity {
 		contactsButton.setOnClickListener(new ContactsListener());
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_new_game, menu);
-		return true;
-	}
 	private class StartGameListener implements OnClickListener
 	{
 		@Override

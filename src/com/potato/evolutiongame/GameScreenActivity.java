@@ -2,8 +2,9 @@ package com.potato.evolutiongame;
 
 import java.util.ArrayList;
 
-import com.potato.evolutiongame.game.Card;
 import com.potato.evolutiongame.game.GameState;
+import com.potato.evolutiongame.game.cards.Card;
+import com.potato.evolutiongame.game.cards.Deck;
 import com.potato.evolutiongame.views.CardDisplayView;
 import com.potato.evolutiongame.views.GameDisplayView;
 import com.potato.evolutiongame.views.SlideOverListener;
@@ -30,11 +31,11 @@ public class GameScreenActivity extends Activity {
 		bottomDisplay.setOnClickListener(new BottomClickListener());
 		
 		ArrayList<Card> l = new ArrayList<Card>();
-		l.add(Card.getCard(0));
-		l.add(Card.getCard(0));
-		l.add(Card.getCard(0));
-		l.add(Card.getCard(0));
-		l.add(Card.getCard(0));
+		l.add(Deck.getCardInstance(0));
+		l.add(Deck.getCardInstance(0));
+		l.add(Deck.getCardInstance(0));
+		l.add(Deck.getCardInstance(0));
+		l.add(Deck.getCardInstance(0));
 		bottomDisplay.setCardList(l);
 		
 		Intent i = getIntent();
@@ -45,7 +46,7 @@ public class GameScreenActivity extends Activity {
 		@Override
 		public void onClick(View arg0) {
 			int select = bottomDisplay.getCardSelected();
-			select++;
+			// Card select logic
 		}
 	}
 

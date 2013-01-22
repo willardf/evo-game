@@ -2,7 +2,7 @@ package com.potato.evolutiongame.views;
 
 import java.util.ArrayList;
 
-import com.potato.evolutiongame.game.Card;
+import com.potato.evolutiongame.game.cards.Card;
 
 import android.content.Context;
 import android.graphics.Canvas;
