@@ -45,6 +45,7 @@ public class CardDisplayView extends View {
 		list = new ArrayList<Card>();
 		offsetX = 0;
 		detector = new GestureDetector(ctx, new gestureListen());
+		detector.setIsLongpressEnabled(false);
 		scroll = new Scroller(ctx);
 	}
 	
@@ -79,22 +80,25 @@ public class CardDisplayView extends View {
 	@Override
 	public boolean onTouchEvent(MotionEvent evt)
 	{
-		detector.onTouchEvent(evt);
-		super.onTouchEvent(evt);
-		return true;
+		boolean result = detector.onTouchEvent(evt);
+		if (result)
+			super.onTouchEvent(evt);
+		return result;
 	}
 	
 	private class gestureListen implements GestureDetector.OnGestureListener
 	{
-
+		private boolean didScroll = false;
 		@Override
 		public boolean onDown(MotionEvent arg0) {
-			return false;
+			didScroll = false;
+			return true;
 		}
 
 		@Override
 		public boolean onFling(MotionEvent arg0, MotionEvent arg1, float arg2,
 				float arg3) {
+			didScroll = true;
 			return false;
 		}
 
@@ -111,6 +115,7 @@ public class CardDisplayView extends View {
 			if (offsetX > maxOffsetX)
 				offsetX = maxOffsetX;
 			postInvalidate();
+			didScroll = true;
 			return false;
 		}
 
@@ -120,6 +125,10 @@ public class CardDisplayView extends View {
 
 		@Override
 		public boolean onSingleTapUp(MotionEvent arg0) {
+			if (didScroll){
+				didScroll = false;
+				return false;
+			}
 			int x = (int)(arg0.getX() + offsetX);
 			cardSelected = x / (cardWidth + cardPadding);
 			// Intentionally non-consume to allow for onClickEvent
