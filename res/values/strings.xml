@@ -8,5 +8,9 @@
     <string name="yourTurnSpinner">Your Turn</string>
     <string name="title_activity_game_screen">GameScreen</string>
     <string name="title_activity_new_game">NewGameActivity</string>
+    <string name="title_activity_card_view">CardViewActivity</string>
+    <string name="cancelString">Cancel</string>
+    <string name="selectString">Select</string>
+    <string name="discardString">Discard</string>
 
 </resources>

@@ -6,23 +6,32 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import com.potato.evolutiongame.game.CommunicationException;
 import com.potato.evolutiongame.game.GameEntry;
 import com.potato.evolutiongame.game.GameState;
-
 
 public class Communicator {
 	private static URL serverURL;
 	private static HttpURLConnection connection;
-	private static final String SERVER_URL = "http://fatedgame.cloudapp.net/Share/";
-	public static void Initialize() throws IOException
+	private static final String SERVER_URL = "http://fatedgame.cloudapp.net/Share/index.php";
+	public static void Initialize() throws CommunicationException 
 	{
-		serverURL = new URL(SERVER_URL);
+		try {
+			serverURL = new URL(SERVER_URL);
+		} catch (MalformedURLException e) {
+			throw new CommunicationException();
+		}
+
+		openConnection();
+		receiveData();
+		closeConnection();
 	}
 	
-	public static long authenticate(String username, String password) throws IOException
+	public static long authenticate(String username, String password) throws CommunicationException
 	{
 		long output = -1L;
 		openConnection();
@@ -40,7 +49,7 @@ public class Communicator {
 		}
 		return output;
 	}
-	public static ArrayList<GameEntry> getGames(long id) throws IOException
+	public static ArrayList<GameEntry> getGames(long id)  throws CommunicationException
 	{
 		ArrayList<GameEntry> output = new ArrayList<GameEntry>();
 		openConnection();
@@ -62,9 +71,8 @@ public class Communicator {
 		
 		return output;
 	}
-	public static GameState getGameState(long gId) throws Exception
+	public static GameState getGameState(long gId) throws CommunicationException, Exception
 	{
-		ArrayList<GameEntry> output = new ArrayList<GameEntry>();
 		openConnection();
 		
 		String data = "op=2" +
@@ -73,13 +81,17 @@ public class Communicator {
 		
 		String res = receiveData();
 		closeConnection();
-		return GameState.parseGameState(res);
+		return GameState.fromJSONString(res);
 	}
 	
-	private static void openConnection() throws IOException
+	private static void openConnection() throws CommunicationException 
 	{
-		connection = (HttpURLConnection)serverURL.openConnection();
-		connection.setRequestMethod("POST");
+		try {
+			connection = (HttpURLConnection)serverURL.openConnection();
+			connection.setRequestMethod("POST");
+		} catch (IOException e) {
+			throw new CommunicationException(e.getMessage());
+		}
 		connection.setDoInput(true);
 		connection.setDoOutput(true);
 		connection.setChunkedStreamingMode(0);
@@ -88,22 +100,86 @@ public class Communicator {
 	{
 		connection.disconnect();
 	}
-	private static void sendData(String data) throws IOException
+	private static void sendData(String data) throws CommunicationException 
 	{
-		OutputStream out = new BufferedOutputStream(connection.getOutputStream());
-		byte[] buffer = data.getBytes();
-		out.write(buffer);
-		out.close();
+		try{
+			OutputStream out = new BufferedOutputStream(connection.getOutputStream());
+			byte[] buffer = data.getBytes();
+			out.write(buffer);
+			out.close();
+		} catch (IOException e) {
+			throw new CommunicationException(e.getMessage());
+		}
 	}
-	private static String receiveData() throws IOException
+	private static String receiveData() throws CommunicationException 
 	{
-		InputStream inp = new BufferedInputStream(connection.getInputStream());
-		
-		byte[] output = new byte[inp.available() + 1];
-		inp.read(output);
-		inp.close();
+		byte[] output = new byte[1];
+		try{
+			InputStream inp = new BufferedInputStream(connection.getInputStream());
+			
+			output = new byte[inp.available() + 1];
+			inp.read(output);
+			inp.close();
+		} catch (IOException e) {
+			throw new CommunicationException(e.getMessage());
+		}
 		
 		String out = new String(output);
 		return out.trim();
+	}
+
+	public static GameState startGame(String oUsername, String jsonData)  throws CommunicationException, Exception{
+		openConnection();
+		
+		String data = "op=3" +
+				"&username=" + Cookies.get("username") +
+				"&password=" + Cookies.get("password") +
+				"&oUsername=" + oUsername +
+				"&data=" + jsonData;
+		sendData(data);
+		
+		String res = receiveData();
+		closeConnection();
+		
+		try
+		{
+			int errorno = Integer.parseInt(res);
+			throw new CommunicationException(String.valueOf(errorno));
+		}
+		catch(NumberFormatException e)
+		{
+			return GameState.fromJSONString(res);
+		}
+	}
+
+	public static int playCard(long gid, int idx)  throws CommunicationException{
+		openConnection();
+		
+		String data = "op=4" +
+				"&username=" + Cookies.get("username") +
+				"&password=" + Cookies.get("password") +
+				"&id=" + gid +
+				"&idx=" + idx;
+		sendData(data);
+		
+		String res = receiveData();
+		closeConnection();
+		
+		return Integer.parseInt(res);
+	}
+	public static int discardCard(long gid, int idx) throws CommunicationException {
+		openConnection();
+		
+		String data = "op=5" +
+				"&username=" + Cookies.get("username") +
+				"&password=" + Cookies.get("password") +
+				"&id=" + gid +
+				"&idx=" + idx;
+		sendData(data);
+		
+		String res = receiveData();
+		closeConnection();
+		
+		return Integer.parseInt(res);
 	}
 }

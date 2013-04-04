@@ -2,11 +2,16 @@ package com.potato.evolutiongame.game;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.potato.evolutiongame.game.cards.CardGroup;
 import com.potato.evolutiongame.game.cards.Card;
 import com.potato.evolutiongame.game.cards.CardTag;
+import com.potato.evolutiongame.game.cards.Deck;
 
-public class Environment implements Serializable {
+public class Environment implements Serializable{
 	private static final long serialVersionUID = -4265701456364986604L;
 	private static final int FEATURE_CNT = 3;
 	private static final int NO_TAG_PENALTY = -5;
@@ -16,13 +21,26 @@ public class Environment implements Serializable {
 	private Card rainfall;
 	private Card[] features;
 	private ArrayList<Card> catastrophies;
-	private int lastFeature;
 	
 	public Environment()
 	{
-		lastFeature = 0;
 		features = new Card[FEATURE_CNT];
 		catastrophies = new ArrayList<Card>();
+	}
+	public Environment(JSONObject o) {
+		
+		temperature = Deck.getCardInstance(o.getInt("temp"));
+		rainfall = Deck.getCardInstance(o.getInt("rainfall"));
+		
+		JSONArray feats = o.getJSONArray("features");
+		features = new Card[feats.length()];
+		for (int i = 0; i < feats.length(); ++i)
+			features[i] = Deck.getCardInstance(feats.getInt(i));
+		
+		JSONArray cats = o.getJSONArray("catastrophies");
+		catastrophies = new ArrayList<Card>();
+		for (int i = 0; i < cats.length(); ++i)
+			catastrophies.add(Deck.getCardInstance(cats.getInt(i)));
 	}
 	
 	//Returns displaced card, if any
@@ -41,13 +59,7 @@ public class Environment implements Serializable {
 		}
 		else if (c.getGroup() == CardGroup.Feature)
 		{
-			if (features[lastFeature] != null)
-			{
-				output = features[lastFeature];
-			}
-			features[lastFeature] = c;
-			lastFeature = (lastFeature + 1) % FEATURE_CNT;
-			
+			output = c;
 		}
 		else if (c.getGroup() == CardGroup.Catastrophy)
 		{
@@ -55,6 +67,13 @@ public class Environment implements Serializable {
 		}
 		return output;
 	}
+	public Card playFeatureCard(Card c, int idx)
+	{
+		Card output = features[idx];
+		features[idx] = c;
+		return output;
+	}
+	
 	public Card getTemperatureCard() {
 		return temperature;
 	}
@@ -91,12 +110,7 @@ public class Environment implements Serializable {
 		
 		return (CardTag[])output.toArray();
 	}
-//	for(Card c : catastrophies)
-//	{
-//		tags = c.getTags();
-//		for (CardTag t : tags)
-//			output.remove(t);
-//	}
+
 	public int calculatePopulationChange(CardTag[] tags)
 	{
 		CardTag[] envTags = getTags();
@@ -114,4 +128,23 @@ public class Environment implements Serializable {
 		}
 		return output == 0 ? NO_TAG_PENALTY : output;
 	}
+
+	public JSONObject getJSONObject() {
+		JSONObject o = new JSONObject();
+		o.put("temp", temperature != null ? temperature.getCardIdx() : -1);
+		
+		o.put("rainfall", rainfall != null ? rainfall.getCardIdx() : -1);
+		
+		JSONArray feats = new JSONArray();
+		for (Card c : features) 
+			feats.put(c != null ? c.getCardIdx() : -1);
+		o.put("features", feats);
+		
+		JSONArray cats = new JSONArray();
+		for (Card c : catastrophies) cats.put(c.getCardIdx());
+		o.put("catastrophies", cats);
+
+		return o;
+	}
+
 }

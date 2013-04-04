@@ -111,7 +111,7 @@ public class CardDisplayView extends View {
 			if (offsetX > maxOffsetX)
 				offsetX = maxOffsetX;
 			postInvalidate();
-			return true;
+			return false;
 		}
 
 		@Override
@@ -128,7 +128,7 @@ public class CardDisplayView extends View {
 	}
 
 	
-	public int getCardSelected()
+	public int getCardIndexSelected()
 	{
 		return cardSelected;
 	}

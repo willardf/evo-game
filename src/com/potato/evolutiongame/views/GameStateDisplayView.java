@@ -34,7 +34,7 @@ public class GameStateDisplayView extends View {
 	@Override
 	protected void onDraw(Canvas c)
 	{
-		c.drawRect(wholeRect, bgPaint);		 
+		c.drawRect(wholeRect, bgPaint);
 	}
 	
 	public void setGameState(GameState g)

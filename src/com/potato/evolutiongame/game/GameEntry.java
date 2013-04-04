@@ -16,7 +16,7 @@ public class GameEntry {
 	public static GameEntry parseGameEntry(String in) throws Exception
 	{
 		String[] split = in.split(",");
-		if (split.length != 4) throw new Exception();
+		if (split.length != 4) throw new Exception("Invalid Game Entry");
 		
 		long gid = Long.parseLong(split[0]);
 		long opId = Long.parseLong(split[2]);

@@ -1,27 +1,22 @@
 package com.potato.evolutiongame;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
+import com.potato.evolutiongame.game.CommunicationException;
 import com.potato.evolutiongame.game.GameEntry;
-import com.potato.evolutiongame.game.GameState;
 
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Adapter;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 public class GameChooseActivity extends Activity {
+	public static final int REQUEST_CHOOSE_GAME = 0x1111;
 	private Spinner theirTurnSpinner;
 	private Spinner yourTurnSpinner;
 	private Button theirTurnButton;
@@ -46,12 +41,13 @@ public class GameChooseActivity extends Activity {
 		yourTurnButton = (Button)findViewById(R.id.yourTurnButton);
 		yourTurnButton.setOnClickListener(new YourClickListener());
 
+		int pid = Integer.parseInt(Cookies.get("pid"));
 		try {
-			data = Communicator.getGames(1);
+			data = Communicator.getGames(pid);
 			populateTheirTurnSpinner();
 			populateYourTurnSpinner();
-		} catch (IOException e) {
-			Toast.makeText(this, "An error occurred while fetching games.", Toast.LENGTH_SHORT).show();
+		} catch (CommunicationException e) {
+			Toast.makeText(this, "Couldn't fetch games list.", Toast.LENGTH_SHORT).show();
 		}
 	}
 	private void populateYourTurnSpinner()
@@ -96,19 +92,13 @@ public class GameChooseActivity extends Activity {
 	}
 	private void loadGame(GameEntry e)
 	{
-		GameState s = null;
 		try {
-			s = Communicator.getGameState(e.getId());
-		} catch (Exception e1) {
-			Toast.makeText(getApplicationContext(), "An error occurred.", Toast.LENGTH_SHORT).show();
-			return;
-		}
-		finally
-		{
-			s.setYourTurn(e.isYourTurn());
 			Intent i = new Intent(this, GameScreenActivity.class);
-			i.putExtra("GAMESTATE", s);
-			startActivity(i);
+			i.putExtra("gid", e.getId());
+			startActivityForResult(i, GameScreenActivity.REQUEST_GAMESCREEN);
+		}
+		catch (Exception e2){
+			Toast.makeText(getApplicationContext(), "Couldn't start game: " + e2.getMessage(), Toast.LENGTH_SHORT).show();				
 		}
 	}
 	
@@ -117,7 +107,7 @@ public class GameChooseActivity extends Activity {
 		@Override
 		public void onClick(View arg0) {
 			Intent i = new Intent(getApplicationContext(), NewGameActivity.class);
-			startActivity(i);
+			startActivityForResult(i, NewGameActivity.REQUEST_NEWGAME);
 		}
 	}
 	private class TheirClickListener implements OnClickListener
@@ -136,5 +126,17 @@ public class GameChooseActivity extends Activity {
 			GameEntry e = (GameEntry)yourTurnSpinner.getSelectedItem();
 			loadGame(e);
 		}
+	}
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {  
+	    if (resultCode == NewGameActivity.RESULT_DROP_TO_LOGIN) this.finishActivity(RESULT_OK);
+	    if (resultCode == NewGameActivity.RESULT_START) {
+	    	GameEntry e = new GameEntry(data.getLongExtra("gid", -1), " ", 0, true);
+	    	this.loadGame(e);
+	    }
+	    if (resultCode == GameScreenActivity.RESULT_ERROR)
+	    {
+	    	String msg = data.getStringExtra("error");
+	    	Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+	    }
 	}
 }

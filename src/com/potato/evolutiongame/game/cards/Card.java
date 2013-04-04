@@ -1,18 +1,12 @@
 package com.potato.evolutiongame.game.cards;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.Serializable;
 
-import com.potato.evolutiongame.R;
-
-import android.content.Context;
-import android.content.res.Resources;
-import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 
-public class Card {
-	
+public class Card implements Serializable{
+	private static final long serialVersionUID = -2291865297562975886L;
 	private int cardIdx;
 	private String name;
 	private Bitmap image;

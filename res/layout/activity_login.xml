@@ -12,11 +12,11 @@
         android:layout_alignParentTop="true"
         android:layout_marginLeft="55dp"
         android:layout_marginTop="98dp"
-        android:text="Email"
+        android:text="Username"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <EditText
-        android:id="@+id/emailText"
+        android:id="@+id/usernameText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -30,8 +30,8 @@
         android:id="@+id/passwordText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/emailText"
-        android:layout_alignRight="@+id/emailText"
+        android:layout_alignLeft="@+id/usernameText"
+        android:layout_alignRight="@+id/usernameText"
         android:layout_centerVertical="true"
         android:ems="10"
         android:inputType="textPassword" >

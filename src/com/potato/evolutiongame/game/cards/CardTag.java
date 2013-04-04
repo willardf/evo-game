@@ -10,5 +10,7 @@ public enum CardTag
 	
 	Dry, Wet, Aquatic,
 	
-	Rocky
+	Rocky,
+	
+	Prey, Disease
 }
