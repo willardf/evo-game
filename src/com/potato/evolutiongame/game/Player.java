@@ -34,19 +34,30 @@ public class Player implements Serializable{
 		board = new Creature(o.getJSONObject("creature"));
 		population = o.getInt("population");
 	}
-	// Returns displaced card, if any
-	public Card playBodyCard(Card c, int index)
+	
+	/**
+	 * Sets card c to index i of this player's creature
+	 * @param c The card to set.
+	 * @param index The index to set card c.
+	 * @return Displaced card, if any.
+	 */
+	public Card playBodyCard(Card c, int i)
 	{
-		return board.setBodyPart(c, index);
+		return board.setBodyPart(c, i);
 	}
-	public Card takeCard(int idx) throws IndexOutOfBoundsException
+	
+	/**
+	 * Removes and returns card from this player's hand.
+	 * @param idx Index in hand
+	 * @return Card at idx
+	 * @throws IndexOutOfBoundsException When idx is < 0 or > length.
+	 */
+	public Card takeHandCard(int idx) throws IndexOutOfBoundsException
 	{
 		if (idx < 0 || idx >= hand.size()) throw new IndexOutOfBoundsException();
-		Card c = hand.get(idx);
-		hand.remove(idx);
-		return c;
+		return hand.remove(idx);
 	}
-	public void addCard(Card c) throws InvalidCardException
+	public void addHandCard(Card c) throws InvalidCardException
 	{
 		if (hand.size() == MAX_CARDS_HAND) throw new InvalidCardException();
 		hand.add(c);
@@ -67,5 +78,11 @@ public class Player implements Serializable{
 		o.put("creature", board.getJSONObject());
 		
 		return o;
+	}
+	public Card getHandCard(int idx) {
+		return hand.get(idx);
+	}
+	public Creature getCreature() {
+		return board;
 	}
 }

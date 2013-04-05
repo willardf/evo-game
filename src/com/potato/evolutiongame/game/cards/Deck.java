@@ -17,6 +17,7 @@ import com.potato.evolutiongame.R;
 public class Deck implements Serializable{
 	private static final long serialVersionUID = -4513592919288316751L;
 	private static ArrayList<Card> cards;
+	private static Card emptyCard;
 	private ArrayList<Card> deck;
 	
 	public Deck(boolean isEmpty)
@@ -54,6 +55,7 @@ public class Deck implements Serializable{
 	}
 	public void placeCard(Card c)
 	{
+		if (c != null || c.getCardIdx() < 0) return; 
 		deck.add(c);
 	}
 	public void placeDeck(Deck c)
@@ -67,25 +69,29 @@ public class Deck implements Serializable{
 	{	// Carnivore, Herbivore, Insectivore, Nectarivore, Flying, 
 		// Cold, Hot, Dry, Wet, Aquatic, Rocky
 		Resources res = ctx.getResources();
+		emptyCard = new Card(-1, "Empty", 
+				((BitmapDrawable)res.getDrawable(R.drawable.emptycard)).getBitmap(), 
+				null, CardGroup.BodyPart, 0);
+		
 		cards = new ArrayList<Card>();
-		addBodyCard(res, "Wings", R.drawable.card1, new CardTag[]{CardTag.Flying}, 1);
-		addBodyCard(res, "Tail fin", R.drawable.card1, new CardTag[]{CardTag.Aquatic}, 0);
+		addBodyCard(res, "Wings", R.drawable.wingscard, new CardTag[]{CardTag.Flying}, 1);
+		addBodyCard(res, "Tail fin", R.drawable.tailfincard, new CardTag[]{CardTag.Aquatic}, 0);
 		addBodyCard(res, "Hollow Fur", R.drawable.card1, new CardTag[]{CardTag.Cold}, 0);
 		addBodyCard(res, "Flat Teeth", R.drawable.card1, new CardTag[]{CardTag.Herbivore}, 0);
 		addBodyCard(res, "Canines", R.drawable.card1, new CardTag[]{CardTag.Carnivore}, 0);
 		addBodyCard(res, "Cold blood", R.drawable.card1, new CardTag[]{CardTag.Hot}, 0);
 		addBodyCard(res, "Split Hoof", R.drawable.card1, new CardTag[]{CardTag.Rocky}, 0);
 		addBodyCard(res, "Air sac", R.drawable.card1, new CardTag[]{CardTag.Aquatic, CardTag.Flying}, 2);
-		addBodyCard(res, "Venomous Tentacles", R.drawable.card1, new CardTag[]{CardTag.Aquatic, CardTag.Prey}, 1);
+		addBodyCard(res, "Poison Tentacles", R.drawable.poisontentaclescard, new CardTag[]{CardTag.Aquatic, CardTag.Prey}, 1);
 		addBodyCard(res, "Suckered Tentacles", R.drawable.card1, new CardTag[]{CardTag.Wet}, 1);
 		addBodyCard(res, "Regenerative Limbs", R.drawable.card1, new CardTag[]{CardTag.Prey, CardTag.Disease}, 0);
 		addBodyCard(res, "Camouflage", R.drawable.card1, new CardTag[]{CardTag.Prey}, 0);
 		
-		addBodyCard(res, "pow", R.drawable.card1, new CardTag[]{CardTag.Flying}, 1);
+		addBodyCard(res, "pow", R.drawable.wingscard, new CardTag[]{CardTag.Flying}, 1);
 		addBodyCard(res, "what", R.drawable.card1, new CardTag[]{CardTag.Aquatic}, 0);
-		addBodyCard(res, "huh", R.drawable.card1, new CardTag[]{CardTag.Cold}, 0);
+		addBodyCard(res, "huh", R.drawable.tailfincard, new CardTag[]{CardTag.Cold}, 0);
 		addBodyCard(res, "you", R.drawable.card1, new CardTag[]{CardTag.Flying}, 1);
-		addBodyCard(res, "me", R.drawable.card1, new CardTag[]{CardTag.Aquatic}, 0);
+		addBodyCard(res, "me", R.drawable.tailfincard, new CardTag[]{CardTag.Aquatic}, 0);
 		addBodyCard(res, "bees", R.drawable.card1, new CardTag[]{CardTag.Cold}, 0);
 	}
 	private static void addBodyCard(Resources res, String title, int resId, CardTag[] tags, int size) throws NotFoundException, IOException
@@ -98,7 +104,7 @@ public class Deck implements Serializable{
 	public static Card getCardInstance(int idx)
 	{
 		if (idx < 0)
-			return null;
+			return emptyCard;
 		return cards.get(idx);
 	}
 	

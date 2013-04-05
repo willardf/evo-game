@@ -43,4 +43,18 @@ public class Card implements Serializable{
 	public CardGroup getGroup() {
 		return group;
 	}
+	
+	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+		out.writeInt(cardIdx);
+    }
+	
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    	cardIdx = in.readInt();
+    	Card c = Deck.getCardInstance(cardIdx);
+    	size = c.getSize();
+    	name = c.getName();
+    	image = c.getImage();
+    	tags = c.getTags();
+    	group = c.getGroup();
+    }
 }

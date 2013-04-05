@@ -47,9 +47,8 @@ public class NewGameActivity extends Activity {
 			
 			GameState s = null;
 			try {
-				s = new GameState();
 				String oUsername = usernameText.getText().toString();
-				s = Communicator.startGame( oUsername, s.toJSONString() );
+				s = Communicator.startGame( oUsername, 10 );
 				ret = 1;
 			} catch (CommunicationException e) {
 				ret = Integer.parseInt(e.getMessage());
@@ -77,6 +76,9 @@ public class NewGameActivity extends Activity {
 					break;
 				case -3:
 					message = "You already have a game with that user.";
+					break;
+				case -4:
+					message = "Invalid game parameters.";
 					break;
 			}
 			Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();

@@ -1,7 +1,9 @@
 package com.potato.evolutiongame;
 
 import com.potato.evolutiongame.game.CommunicationException;
+import com.potato.evolutiongame.game.Creature;
 import com.potato.evolutiongame.game.GameState;
+import com.potato.evolutiongame.game.NotMyTurnException;
 import com.potato.evolutiongame.game.cards.Card;
 import com.potato.evolutiongame.views.CardDisplayView;
 import com.potato.evolutiongame.views.GameDisplayView;
@@ -23,6 +25,8 @@ public class GameScreenActivity extends Activity {
 	private CardDisplayView bottomDisplay;
 	private int selectedCard;
 	
+	private GameState.BodyPartCallback bpCallback;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -38,11 +42,17 @@ public class GameScreenActivity extends Activity {
 			currentState = Communicator.getGameState(gid);
 		} catch (Exception e) {
 			Intent errRet = new Intent();
-			errRet.putExtra("error", e.getMessage());
+			errRet.putExtra("error", "Couldn't load game. Error: " + e.getMessage());
 			setResult(RESULT_ERROR, errRet);
 			finish();
 			return;
 		}
+		currentState.setOnBodyPartListener(new BodyPartListen());
+		currentState.setOnRefreshListener(new RefreshListen());
+		updateDisplay();
+	}
+	private void updateDisplay()
+	{
 		bottomDisplay.setCardList(currentState.getMyPlayerHand());
 	}
 	private class BottomClickListener implements OnClickListener
@@ -71,6 +81,8 @@ public class GameScreenActivity extends Activity {
 						// Should be possible?
 					} catch (CommunicationException e) {
 						Toast.makeText(this, "Couldn't update server.", Toast.LENGTH_SHORT).show();
+					} catch (NotMyTurnException e) {
+						Toast.makeText(this, "It's not your turn.", Toast.LENGTH_SHORT).show();
 					}
 					break;
 				case CardViewActivity.RESULT_DISCARD:
@@ -82,6 +94,18 @@ public class GameScreenActivity extends Activity {
 						Toast.makeText(this, "Couldn't update server.", Toast.LENGTH_SHORT).show();
 					}
 					break;
+			}
+		}
+		else if (requestCode == CreatureDetailActivity.REQUEST_CREATURECARD)
+		{
+			if (resultCode == RESULT_OK)
+			{
+				int toReplace = data.getIntExtra(CreatureDetailActivity.RESULT_CREATURECARD_IDX, -1);
+				try {
+					bpCallback.BodyPartCallBack(selectedCard, toReplace);
+				} catch (CommunicationException e) {
+					Toast.makeText(this, "Couldn't update server: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+				}
 			}
 		}
 	}
@@ -97,5 +121,27 @@ public class GameScreenActivity extends Activity {
 				bottomDisplay.setVisibility(View.INVISIBLE);
 			}
 		}	
+	}
+	private class RefreshListen implements GameState.RefreshListener
+	{
+		@Override
+		public void onRefresh() {
+			updateDisplay();	
+		}
+	}
+	private class BodyPartListen implements GameState.BodyPartListener
+	{
+		@Override
+		public void onBodyPartCallback(int toPlay, GameState.BodyPartCallback callback) {
+			bpCallback = callback;
+			selectedCard = toPlay;
+			Creature c = currentState.getMyPlayerCreature();
+			
+			Intent i = new Intent(getApplicationContext(), CreatureDetailActivity.class);
+			i.putExtra(CreatureDetailActivity.FORRESULT_KEY, true);
+			i.putExtra(CreatureDetailActivity.CREATURE_KEY, c);
+			
+			startActivityForResult(i, CreatureDetailActivity.REQUEST_CREATURECARD);
+		}
 	}
 }

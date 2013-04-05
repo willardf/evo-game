@@ -67,4 +67,11 @@ public class Creature implements Serializable {
 		bodyParts[index] = c;
 		return output;
 	}
+	public ArrayList<Card> getCards()
+	{
+		ArrayList<Card> l = new ArrayList<Card>();
+		for (Card b : bodyParts)
+			l.add(b);
+		return l;
+	}
 }

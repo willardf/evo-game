@@ -17,7 +17,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 
 public class GameDisplayView extends View {
-	ArrayList<SlideOverListener> slideListeners = new ArrayList<SlideOverListener>();
+	ArrayList<SlideOverListener> slideListeners;
 	
 	Bitmap background;
 	Rect wholeRect;
@@ -33,6 +33,7 @@ public class GameDisplayView extends View {
 	public GameDisplayView(Context ctx, AttributeSet attrs)
 	{
 		super(ctx, attrs);
+		slideListeners = new ArrayList<SlideOverListener>();
 		background = ((BitmapDrawable)getResources().getDrawable(R.drawable.background)).getBitmap();
 		detector = new GestureDetector(ctx, new gestureListen());
 		scroll = new Scroller(ctx);

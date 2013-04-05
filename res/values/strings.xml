@@ -12,5 +12,7 @@
     <string name="cancelString">Cancel</string>
     <string name="selectString">Select</string>
     <string name="discardString">Discard</string>
+    <string name="title_activity_creature_detail">CreatureDetailActivity</string>
+    <string name="refreshString">Refresh</string>
 
 </resources>

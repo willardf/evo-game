@@ -3,6 +3,7 @@ package com.potato.evolutiongame.views;
 import java.util.ArrayList;
 
 import com.potato.evolutiongame.game.cards.Card;
+import com.potato.evolutiongame.game.cards.Deck;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -17,6 +18,8 @@ import android.view.View;
 import android.widget.Scroller;
 
 public class CardDisplayView extends View {
+	private static final float CARD_ASPECT_RATIO = 1.375f;
+	
 	Paint bgPaint;
 	Paint whitePaint;
 	Rect wholeRect;
@@ -54,7 +57,7 @@ public class CardDisplayView extends View {
 	{
 		cardPadding = h / 16 + 1;
 		cardHeight = h - (2 * cardPadding);
-		cardWidth = (int)(cardHeight / 1.4f);
+		cardWidth = (int)(cardHeight / CARD_ASPECT_RATIO);
 		
 		maxOffsetX = list.size() * (cardWidth + cardPadding) - getWidth() + cardPadding;
 		
@@ -71,6 +74,7 @@ public class CardDisplayView extends View {
 		for (int i = 0; i < list.size(); ++i)
 		{
 			Card card = list.get(i);
+			if (card == null) card = Deck.getCardInstance(-1);
 			cardDest.left = cardPadding + i * (cardWidth + cardPadding) - offsetX;
 			cardDest.right = cardPadding + i * (cardWidth + cardPadding) + cardWidth - offsetX;
 			c.drawBitmap(card.getImage(), null, cardDest, null);

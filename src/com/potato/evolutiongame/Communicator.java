@@ -81,6 +81,7 @@ public class Communicator {
 		
 		String res = receiveData();
 		closeConnection();
+		
 		return GameState.fromJSONString(res);
 	}
 	
@@ -128,14 +129,14 @@ public class Communicator {
 		return out.trim();
 	}
 
-	public static GameState startGame(String oUsername, String jsonData)  throws CommunicationException, Exception{
+	public static GameState startGame(String oUsername, int goal)  throws CommunicationException, Exception{
 		openConnection();
 		
 		String data = "op=3" +
 				"&username=" + Cookies.get("username") +
 				"&password=" + Cookies.get("password") +
 				"&oUsername=" + oUsername +
-				"&data=" + jsonData;
+				"&goal=" + goal;
 		sendData(data);
 		
 		String res = receiveData();
@@ -152,20 +153,23 @@ public class Communicator {
 		}
 	}
 
-	public static int playCard(long gid, int idx)  throws CommunicationException{
+	public static int playBodyCard(long gid, int toPlay, int toReplace)  throws CommunicationException{
 		openConnection();
 		
 		String data = "op=4" +
 				"&username=" + Cookies.get("username") +
 				"&password=" + Cookies.get("password") +
 				"&id=" + gid +
-				"&idx=" + idx;
+				"&move={\"cardidx\":" + toPlay +
+				",\"creatureidx\":" + toReplace +"}";
 		sendData(data);
 		
 		String res = receiveData();
 		closeConnection();
 		
-		return Integer.parseInt(res);
+		int result = Integer.parseInt(res);
+		if (result < 0) throw new CommunicationException("Error #" + result);
+		return result;
 	}
 	public static int discardCard(long gid, int idx) throws CommunicationException {
 		openConnection();
@@ -174,12 +178,14 @@ public class Communicator {
 				"&username=" + Cookies.get("username") +
 				"&password=" + Cookies.get("password") +
 				"&id=" + gid +
-				"&idx=" + idx;
+				"&cardidx=" + idx;
 		sendData(data);
 		
 		String res = receiveData();
 		closeConnection();
 		
-		return Integer.parseInt(res);
+		int result = Integer.parseInt(res);
+		if (result < 0) throw new CommunicationException("Error #" + result);
+		return result;
 	}
 }
