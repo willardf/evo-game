@@ -8,6 +8,8 @@ import org.json.JSONObject;
 import org.json.JSONString;
 
 import com.potato.evolutiongame.Communicator;
+import com.potato.evolutiongame.game.ai.EvoGameAI;
+import com.potato.evolutiongame.game.ai.RandomAgent;
 import com.potato.evolutiongame.game.cards.Card;
 import com.potato.evolutiongame.game.cards.Deck;
 
@@ -16,13 +18,20 @@ public class GameState implements Serializable, JSONString {
 		public void onBodyPartCallback(int toPlay, GameState.BodyPartCallback callback);
 	}
 	public class BodyPartCallback {
-		public final void BodyPartCallBack(int toPlay, int toReplace) throws CommunicationException{
-			if (toPlay == -1 || toReplace == -1) return; 
+		public final void BodyPartCallBack(int toPlay, int toReplace) throws CommunicationException, Exception{
+			if (toPlay == -1 || toReplace == -1) return;
 			Card c = players[playerTurn].takeHandCard(toPlay);
 			Card t = players[playerTurn].playBodyCard(c, toReplace);
 			discard.placeCard(t);
 			finishTurn();
-			if (gid != -1) Communicator.playBodyCard(gid, toPlay, toReplace);
+			if (gid != -1) Communicator.playBodyCard(oppName, toPlay, toReplace);
+			else if (playerTurn != 0)
+			{
+				myTurn = true;
+				if (ai == null) throw new Exception("Uninitialized AI.");
+				ai.makeMove(GameState.this);
+				myTurn = true;
+			}
 		}
 	}
 	ArrayList<BodyPartListener> bodypartListeners = new ArrayList<BodyPartListener>();
@@ -43,7 +52,9 @@ public class GameState implements Serializable, JSONString {
 	private Deck deck, discard;
 	private boolean myTurn;
 	private int popGoal;
-
+	
+	private EvoGameAI ai;
+	
 	public GameState() {
 		this(DEFAULT_GOAL_POPULATION);
 	}
@@ -56,6 +67,8 @@ public class GameState implements Serializable, JSONString {
 		players[1] = new Player();
 		oppName = "Computer";
 		gid = -1;
+		myTurn = true;
+		ai = new RandomAgent();
 		
 		environ = new Environment();
 		deck = new Deck(false);
@@ -103,7 +116,7 @@ public class GameState implements Serializable, JSONString {
 	public void discardFromHand(int selectedCard) throws IndexOutOfBoundsException, CommunicationException {
 		Card c = players[playerTurn].takeHandCard(selectedCard);
 		discard.placeCard(c);
-		if (gid != -1) Communicator.discardCard(gid, selectedCard);
+		if (gid != -1) Communicator.discardCard(oppName, selectedCard);
 	}
 	public void playCard(int idx) 
 			throws IndexOutOfBoundsException, CommunicationException, NotMyTurnException
@@ -194,5 +207,9 @@ public class GameState implements Serializable, JSONString {
 	public boolean isMyTurn()
 	{
 		return myTurn;
+	}
+	public void setAI(EvoGameAI a)
+	{
+		ai = a;
 	}
 }

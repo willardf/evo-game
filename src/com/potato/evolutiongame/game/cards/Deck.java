@@ -55,7 +55,7 @@ public class Deck implements Serializable{
 	}
 	public void placeCard(Card c)
 	{
-		if (c != null || c.getCardIdx() < 0) return; 
+		if (c == null || c.getCardIdx() < 0) return; 
 		deck.add(c);
 	}
 	public void placeDeck(Deck c)

@@ -19,6 +19,9 @@ import android.content.Intent;
 public class GameScreenActivity extends Activity {
 	public static final int REQUEST_GAMESCREEN = 0xFEE0;
 	public static final int RESULT_ERROR = 0xFEE1;
+	public static final String GID_KEY = "gid";
+	public static final String REQUEST_CREATE_GAME = "0xFEE2";
+	public static final String REQUEST_LOAD_GAME = "0xFEE3";
 	
 	private GameState currentState;
 	private GameDisplayView centerDisplay;
@@ -37,19 +40,41 @@ public class GameScreenActivity extends Activity {
 		bottomDisplay.setOnClickListener(new BottomClickListener());
 		
 		Intent i = getIntent();
-		long gid = i.getLongExtra("gid", -1);
-		try {
-			currentState = Communicator.getGameState(gid);
-		} catch (Exception e) {
-			Intent errRet = new Intent();
-			errRet.putExtra("error", "Couldn't load game. Error: " + e.getMessage());
-			setResult(RESULT_ERROR, errRet);
-			finish();
+		long gid = i.getLongExtra(GID_KEY, -1);
+		boolean startGame = i.getBooleanExtra(REQUEST_CREATE_GAME, false);
+		boolean loadGame = i.getBooleanExtra(REQUEST_LOAD_GAME, false);
+		if (gid > 0)
+		{
+			try {
+				currentState = Communicator.getGameState(gid);
+			} catch (Exception e) {
+				finishWithError("Couldn't load game. Error: ", e);
+				return;
+			}
+		}
+		else if (startGame)
+		{
+			currentState = new GameState();
+		}
+		else if (loadGame)
+		{
+			// Figure this out
+		}
+		else
+		{
+			finishWithError("No game state to load.", null);
 			return;
 		}
 		currentState.setOnBodyPartListener(new BodyPartListen());
 		currentState.setOnRefreshListener(new RefreshListen());
 		updateDisplay();
+	}
+	private void finishWithError(String string, Exception e) {
+		String output = string + (e != null ? e.getMessage() : "");
+		Intent errRet = new Intent();
+		errRet.putExtra("error", output);
+		setResult(RESULT_ERROR, errRet);
+		finish();
 	}
 	private void updateDisplay()
 	{
@@ -105,6 +130,8 @@ public class GameScreenActivity extends Activity {
 					bpCallback.BodyPartCallBack(selectedCard, toReplace);
 				} catch (CommunicationException e) {
 					Toast.makeText(this, "Couldn't update server: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+				} catch (Exception e) {
+					Toast.makeText(this, "AI Failure: " + e.getMessage(), Toast.LENGTH_SHORT).show();
 				}
 			}
 		}

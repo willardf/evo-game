@@ -1,10 +1,7 @@
 package com.potato.evolutiongame;
 
-import com.potato.evolutiongame.game.cards.Deck;
-
 import android.os.Bundle;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.app.Activity;
 import android.content.Context;
@@ -30,7 +27,6 @@ public class LoginActivity extends Activity {
 		try
 		{
 			Communicator.Initialize();
-			Deck.Initialize(getApplicationContext());
 		}
 		catch(Exception e){
 			Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();

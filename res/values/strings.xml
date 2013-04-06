@@ -14,5 +14,10 @@
     <string name="discardString">Discard</string>
     <string name="title_activity_creature_detail">CreatureDetailActivity</string>
     <string name="refreshString">Refresh</string>
+    <string name="title_activity_main_menu">MainMenuActivity</string>
+    <string name="newGameString">Start New Game</string>
+    <string name="continueString">Continue Old Game</string>
+    <string name="loginString">Login</string>
+    <string name="EvolutionGame">Evo</string>
 
 </resources>

@@ -153,13 +153,13 @@ public class Communicator {
 		}
 	}
 
-	public static int playBodyCard(long gid, int toPlay, int toReplace)  throws CommunicationException{
+	public static int playBodyCard(String oUsername, int toPlay, int toReplace)  throws CommunicationException{
 		openConnection();
 		
 		String data = "op=4" +
 				"&username=" + Cookies.get("username") +
 				"&password=" + Cookies.get("password") +
-				"&id=" + gid +
+				"&oUsername=" + oUsername +
 				"&move={\"cardidx\":" + toPlay +
 				",\"creatureidx\":" + toReplace +"}";
 		sendData(data);
@@ -171,13 +171,13 @@ public class Communicator {
 		if (result < 0) throw new CommunicationException("Error #" + result);
 		return result;
 	}
-	public static int discardCard(long gid, int idx) throws CommunicationException {
+	public static int discardCard(String oUsername, int idx) throws CommunicationException {
 		openConnection();
 		
 		String data = "op=5" +
 				"&username=" + Cookies.get("username") +
 				"&password=" + Cookies.get("password") +
-				"&id=" + gid +
+				"&oUsername=" + oUsername +
 				"&cardidx=" + idx;
 		sendData(data);
 		
