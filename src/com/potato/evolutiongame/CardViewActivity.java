@@ -1,7 +1,7 @@
 package com.potato.evolutiongame;
 
-import com.potato.evolutiongame.game.cards.Card;
-import com.potato.evolutiongame.game.cards.Deck;
+import com.potato.evolutiongame.game.cards.PlayerCard;
+import com.potato.evolutiongame.game.cards.PlayerDeck;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -45,7 +45,7 @@ public class CardViewActivity extends Activity {
 		
 		Intent i = getIntent();
 		int idx = i.getIntExtra("cardIdx", 0);
-		Card c = Deck.getCardInstance(idx);
+		PlayerCard c = PlayerDeck.getCardInstance(idx);
 		cardNameText.setText(c.getName());
 		cardDisplay.setImageBitmap(c.getImage());
 	}

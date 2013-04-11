@@ -3,14 +3,17 @@ package com.potato.evolutiongame.views;
 import java.util.ArrayList;
 
 import com.potato.evolutiongame.game.cards.Card;
-import com.potato.evolutiongame.game.cards.Deck;
+import com.potato.evolutiongame.game.cards.PlayerCard;
+import com.potato.evolutiongame.game.cards.PlayerDeck;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -19,6 +22,7 @@ import android.widget.Scroller;
 
 public class CardDisplayView extends View {
 	private static final float CARD_ASPECT_RATIO = 1.375f;
+	private static final String TITLE_KEY = "title";
 	
 	Paint bgPaint;
 	Paint whitePaint;
@@ -33,7 +37,9 @@ public class CardDisplayView extends View {
 	int cardWidth;
 	int cardHeight;
 	int cardPadding;
+	int cardSpacing;
 	Rect cardDest;
+	String title = "Hand Cards";
 	
 	public CardDisplayView(Context ctx, AttributeSet attr)
 	{
@@ -44,6 +50,7 @@ public class CardDisplayView extends View {
 		whitePaint = new Paint();
 		whitePaint.setColor(Color.WHITE);
 		whitePaint.setStyle(Paint.Style.FILL);
+		whitePaint.setTypeface(Typeface.DEFAULT_BOLD);
 		
 		list = new ArrayList<Card>();
 		offsetX = 0;
@@ -55,14 +62,17 @@ public class CardDisplayView extends View {
 	@Override
 	protected void onSizeChanged(int w, int h, int oldW, int oldH)
 	{
-		cardPadding = h / 16 + 1;
-		cardHeight = h - (2 * cardPadding);
+		cardPadding = h / 12 + 1;
+		cardSpacing = h / 16 + 1;
+		cardHeight = h - (cardPadding);
 		cardWidth = (int)(cardHeight / CARD_ASPECT_RATIO);
 		
-		maxOffsetX = list.size() * (cardWidth + cardPadding) - getWidth() + cardPadding;
+		maxOffsetX = list.size() * (cardWidth + cardPadding) - w;
 		
-		cardDest = new Rect(0, (int)(cardPadding * 1.5), cardWidth, cardHeight);
-		wholeRect = new Rect(0, 0, getWidth(), getHeight());	
+		cardDest = new Rect(0, (int)(cardPadding), cardWidth, cardHeight);
+		wholeRect = new Rect(0, 0, w, h);
+		
+		whitePaint.setTextSize(cardPadding - 1);
 	}
 	
 	@Override
@@ -71,12 +81,15 @@ public class CardDisplayView extends View {
 		c.clipRect(wholeRect, Region.Op.REPLACE);
 		c.drawRect(wholeRect, bgPaint);
 		
+		if (title != null)
+			c.drawText(title,  1, cardPadding, whitePaint);
+		
 		for (int i = 0; i < list.size(); ++i)
 		{
 			Card card = list.get(i);
-			if (card == null) card = Deck.getCardInstance(-1);
-			cardDest.left = cardPadding + i * (cardWidth + cardPadding) - offsetX;
-			cardDest.right = cardPadding + i * (cardWidth + cardPadding) + cardWidth - offsetX;
+			if (card == null) card = PlayerDeck.getCardInstance(-1);
+			cardDest.left = cardPadding + i * (cardWidth + cardSpacing) - offsetX;
+			cardDest.right = cardDest.left + cardWidth;
 			c.drawBitmap(card.getImage(), null, cardDest, null);
 		}
 	}
@@ -135,6 +148,7 @@ public class CardDisplayView extends View {
 			}
 			int x = (int)(arg0.getX() + offsetX);
 			cardSelected = x / (cardWidth + cardPadding);
+			if (list == null || cardSelected >= list.size()) cardSelected = -1;
 			// Intentionally non-consume to allow for onClickEvent
 			return true;
 		}
@@ -149,5 +163,9 @@ public class CardDisplayView extends View {
 	{
 		list = l;
 		maxOffsetX = list.size() * (cardWidth + cardPadding) - getWidth() + cardPadding;
+	}
+	public void setTitle(String s)
+	{
+		title = s;
 	}
 }

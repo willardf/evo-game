@@ -1,11 +1,11 @@
 package com.potato.evolutiongame;
 
-import com.potato.evolutiongame.game.cards.Deck;
+import com.potato.evolutiongame.game.cards.EnvironmentDeck;
+import com.potato.evolutiongame.game.cards.PlayerDeck;
 
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -30,7 +30,8 @@ public class MainMenuActivity extends Activity {
 		oldGameButton.setOnClickListener(new OldClickListener());
 		try
 		{	
-			Deck.Initialize(getApplicationContext());
+			PlayerDeck.Initialize(getApplicationContext());
+			EnvironmentDeck.Initialize(getApplicationContext());
 		}
 		catch(Exception e){
 			Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();

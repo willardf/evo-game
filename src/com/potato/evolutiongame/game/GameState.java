@@ -11,7 +11,10 @@ import com.potato.evolutiongame.Communicator;
 import com.potato.evolutiongame.game.ai.EvoGameAI;
 import com.potato.evolutiongame.game.ai.RandomAgent;
 import com.potato.evolutiongame.game.cards.Card;
-import com.potato.evolutiongame.game.cards.Deck;
+import com.potato.evolutiongame.game.cards.EnvironmentCard;
+import com.potato.evolutiongame.game.cards.EnvironmentDeck;
+import com.potato.evolutiongame.game.cards.PlayerCard;
+import com.potato.evolutiongame.game.cards.PlayerDeck;
 
 public class GameState implements Serializable, JSONString {
 	public interface BodyPartListener {
@@ -20,18 +23,11 @@ public class GameState implements Serializable, JSONString {
 	public class BodyPartCallback {
 		public final void BodyPartCallBack(int toPlay, int toReplace) throws CommunicationException, Exception{
 			if (toPlay == -1 || toReplace == -1) return;
-			Card c = players[playerTurn].takeHandCard(toPlay);
-			Card t = players[playerTurn].playBodyCard(c, toReplace);
-			discard.placeCard(t);
+			PlayerCard c = getCurrentPlayer().takeHandCard(toPlay);
+			PlayerCard t = getCurrentPlayer().playBodyCard(c, toReplace);
+			playerDiscard.placeCard(t);
 			finishTurn();
 			if (gid != -1) Communicator.playBodyCard(oppName, toPlay, toReplace);
-			else if (playerTurn != 0)
-			{
-				myTurn = true;
-				if (ai == null) throw new Exception("Uninitialized AI.");
-				ai.makeMove(GameState.this);
-				myTurn = true;
-			}
 		}
 	}
 	ArrayList<BodyPartListener> bodypartListeners = new ArrayList<BodyPartListener>();
@@ -42,6 +38,7 @@ public class GameState implements Serializable, JSONString {
 	
 	private static final long serialVersionUID = 2575600538286270740L;
 	private static final int DEFAULT_GOAL_POPULATION = 20;
+	private static final int SIZE_BREADTH = 3;
 	
 	private long gid = -1;
 	private String oppName;
@@ -49,7 +46,8 @@ public class GameState implements Serializable, JSONString {
 	private Player[] players;
 	private int playerTurn;
 	private Environment environ;
-	private Deck deck, discard;
+	private PlayerDeck playerDeck, playerDiscard;
+	private EnvironmentDeck enviroDeck, enviroDiscard;
 	private boolean myTurn;
 	private int popGoal;
 	
@@ -71,13 +69,17 @@ public class GameState implements Serializable, JSONString {
 		ai = new RandomAgent();
 		
 		environ = new Environment();
-		deck = new Deck(false);
-		deck.shuffle();
-		discard = new Deck(true);
+		enviroDeck = new EnvironmentDeck(false);
+		enviroDeck.shuffle();
+		enviroDiscard = new EnvironmentDeck(true);
+		
+		playerDeck = new PlayerDeck(false);
+		playerDeck.shuffle();
+		playerDiscard = new PlayerDeck(true);
 		for (int i = 0; i < Player.MAX_CARDS_HAND; i++)
 		{
-			drawCard(0);
-			drawCard(1);
+			drawPlayerCard(0);
+			drawPlayerCard(1);
 		}
 	}
 	public GameState(JSONObject j)
@@ -89,8 +91,11 @@ public class GameState implements Serializable, JSONString {
 		
 
 		playerTurn = j.getInt("playerTurn");
-		deck = new Deck(j.getJSONArray("deck"));
-		discard = new Deck(j.getJSONArray("discard"));
+		playerDeck = new PlayerDeck(j.getJSONArray("deck"));
+		playerDiscard = new PlayerDeck(j.getJSONArray("discard"));
+		
+		enviroDeck = new EnvironmentDeck(j.getJSONArray("edeck"));
+		enviroDiscard = new EnvironmentDeck(j.getJSONArray("ediscard"));
 		
 		popGoal = j.getInt("popGoal");
 		gid = j.getLong("gid");
@@ -100,30 +105,42 @@ public class GameState implements Serializable, JSONString {
 		environ = new Environment(j.getJSONObject("environ"));
 	}
 
-	public void drawCard(int player)
+	public void drawPlayerCard(int player)
 	{
-		if (deck.count() == 0)
+		if (playerDeck.count() == 0)
 		{
-			deck.placeDeck(discard);
-			deck.shuffle();
+			playerDeck.placeDeck(playerDiscard);
+			playerDeck.shuffle();
 		}
 		try {
-			players[player].addHandCard(deck.drawCard());
+			players[player].addHandCard(playerDeck.drawCard());
 		} catch (InvalidCardException e) {
 			// Totes not possible right now
 		}
 	}
+	public void drawEnvironmentCard()
+	{
+		if (enviroDeck.count() == 0)
+		{
+			enviroDeck.placeDeck(enviroDiscard);
+			enviroDeck.shuffle();
+		}
+		Card c = environ.playCard(enviroDeck.drawCard());
+		discardCard(c);
+	}
+	
 	public void discardFromHand(int selectedCard) throws IndexOutOfBoundsException, CommunicationException {
-		Card c = players[playerTurn].takeHandCard(selectedCard);
-		discard.placeCard(c);
+		PlayerCard c = getCurrentPlayer().takeHandCard(selectedCard);
+		playerDiscard.placeCard(c);
 		if (gid != -1) Communicator.discardCard(oppName, selectedCard);
 	}
 	public void playCard(int idx) 
-			throws IndexOutOfBoundsException, CommunicationException, NotMyTurnException
+			throws IndexOutOfBoundsException, CommunicationException, 
+				NotMyTurnException, Exception
 	{
 		if (!myTurn) throw new NotMyTurnException();
 		
-		Card c = players[playerTurn].getHandCard(idx);
+		Card c = getCurrentPlayer().getHandCard(idx);
 		Card t = null;
 		switch (c.getGroup())
 		{
@@ -132,26 +149,47 @@ public class GameState implements Serializable, JSONString {
 					b.onBodyPartCallback(idx, new BodyPartCallback());
 				return;
 			case Action:
-				discard.placeCard(c);
+				discardFromHand(idx);
+				finishTurn();
 				break;
-			case Rainfall:
-			case Temperature:
 			case Catastrophy:
 			case Feature:
 				t = environ.playCard(c);
 				break;
 		}
-		if (t != null) discard.placeCard(t);
-		
-		finishTurn();
+		discardCard(t);
 	}
-	private void finishTurn()
+	
+	private void discardCard(Card c) {
+		if (c == null) return;
+		if (c instanceof EnvironmentCard)
+		{
+			enviroDiscard.placeCard((EnvironmentCard)c);
+		}
+		else playerDiscard.placeCard((PlayerCard)c);
+		
+	}
+	private void finishTurn() throws Exception
 	{
-		drawCard(playerTurn);
+		drawPlayerCard(playerTurn);
+
+		int change = environ.calculatePopulationChange(getCurrentPlayer());
+		getCurrentPlayer().changePopulation(change);
 		
 		// Increment turn
 		playerTurn = (playerTurn + 1) % 2;
-		myTurn = !myTurn;
+		if (gid != -1) myTurn = !myTurn;
+		
+		if (gid == -1 && playerTurn != 0)
+		{
+			myTurn = true;
+			if (ai == null) throw new Exception("Uninitialized AI.");
+			ai.makeMove(GameState.this);
+			myTurn = true;
+
+			drawEnvironmentCard();
+		}
+		
 		for (RefreshListener r : refreshListeners) r.onRefresh();
 	}
 	
@@ -163,14 +201,16 @@ public class GameState implements Serializable, JSONString {
 		return output;
 	}
 	public boolean isYourTurn() { return myTurn; }
-	public ArrayList<Card> getMyPlayerHand()
-	{
+	public Player getCurrentPlayer() {
 		int idx = myTurn ? playerTurn : ((playerTurn + 1) % 2);
-		return players[idx].getHand();
+		return players[idx];
 	}
-	public Creature getMyPlayerCreature() {
-		int idx = myTurn ? playerTurn : ((playerTurn + 1) % 2);
-		return players[idx].getCreature();
+	public ArrayList<PlayerCard> getCurrentPlayerHand()
+	{
+		return getCurrentPlayer().getHand();
+	}
+	public Creature getCurrentPlayerCreature() {
+		return getCurrentPlayer().getCreature();
 	}
 	
 	@Override
@@ -182,8 +222,11 @@ public class GameState implements Serializable, JSONString {
 		j.put("players", ply);
 
 		j.put("playerTurn", playerTurn);
-		j.put("deck", deck.getJSONArray());
-		j.put("discard", discard.getJSONArray());
+		j.put("deck", playerDeck.getJSONArray());
+		j.put("discard", playerDiscard.getJSONArray());
+		
+		j.put("edeck", enviroDeck.getJSONArray());
+		j.put("ediscard", enviroDiscard.getJSONArray());
 		
 		j.put("popGoal", popGoal);
 		
@@ -191,6 +234,10 @@ public class GameState implements Serializable, JSONString {
 		j.put("environ", environ.getJSONObject());
 		
 		return j.toString();
+	}
+	public Environment getEnvironment()
+	{
+		return environ;
 	}
 	public String getOppName() {
 		return oppName;
@@ -211,5 +258,17 @@ public class GameState implements Serializable, JSONString {
 	public void setAI(EvoGameAI a)
 	{
 		ai = a;
+	}
+	public int getGoalPopulation() {
+		return popGoal;
+	}
+	public String getSizeText(int size) {
+		int slot = size / SIZE_BREADTH;
+		switch (slot)
+		{
+			case 0: return "Small";
+			case 1: return "Medium";
+			default: return "Large";
+		}
 	}
 }

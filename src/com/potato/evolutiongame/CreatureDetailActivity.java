@@ -1,6 +1,10 @@
 package com.potato.evolutiongame;
 
+import java.util.ArrayList;
+
 import com.potato.evolutiongame.game.Creature;
+import com.potato.evolutiongame.game.cards.Card;
+import com.potato.evolutiongame.game.cards.EnvironmentCard;
 import com.potato.evolutiongame.views.CardDisplayView;
 
 import android.os.Bundle;
@@ -40,7 +44,11 @@ public class CreatureDetailActivity extends Activity {
 		Intent i = getIntent();
 		boolean forresult = i.getBooleanExtra(FORRESULT_KEY, false);
 		Creature c = (Creature)i.getSerializableExtra(CREATURE_KEY);
-		cardView.setCardList(c.getCards());
+		
+		ArrayList<Card> cardList = new ArrayList<Card>();
+		for (Card p : c.getCards()) cardList.add(p);
+		cardView.setCardList(cardList);
+		
 		if (!forresult) selectButton.setVisibility(View.GONE);
 		selectButton.setEnabled(false);
 	}

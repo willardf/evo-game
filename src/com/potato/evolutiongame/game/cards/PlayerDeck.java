@@ -14,25 +14,25 @@ import android.graphics.drawable.BitmapDrawable;
 
 import com.potato.evolutiongame.R;
 
-public class Deck implements Serializable{
+public class PlayerDeck implements Serializable{
 	private static final long serialVersionUID = -4513592919288316751L;
-	private static ArrayList<Card> cards;
-	private static Card emptyCard;
-	private ArrayList<Card> deck;
+	private static ArrayList<PlayerCard> playerCards;
+	private static PlayerCard emptyCard;
+	private ArrayList<PlayerCard> deck;
 	
-	public Deck(boolean isEmpty)
+	public PlayerDeck(boolean isEmpty)
 	{
-		deck = new ArrayList<Card>();
+		deck = new ArrayList<PlayerCard>();
 		if (!isEmpty)
 		{
-			deck.addAll(cards);
+			deck.addAll(playerCards);
 		}
 	}
-	public Deck(JSONArray arr)
+	public PlayerDeck(JSONArray arr)
 	{
-		deck = new ArrayList<Card>();
+		deck = new ArrayList<PlayerCard>();
 		for (int i = 0; i < arr.length(); ++i)
-			deck.add(cards.get(arr.getInt(i)));
+			deck.add(playerCards.get(arr.getInt(i)));
 	}
 
 	public void shuffle()
@@ -41,24 +41,24 @@ public class Deck implements Serializable{
 		for (int i = 0; i < deck.size(); i++)
 		{
 			int swap = r.nextInt(deck.size());
-			Card temp = deck.get(i);
+			PlayerCard temp = deck.get(i);
 			deck.set(i, deck.get(swap));
 			deck.set(swap, temp);
 		}
 	}
 	
-	public Card drawCard()
+	public PlayerCard drawCard()
 	{
-		Card c = deck.get(deck.size() - 1);
+		PlayerCard c = deck.get(deck.size() - 1);
 		deck.remove(deck.size() - 1);
 		return c;
 	}
-	public void placeCard(Card c)
+	public void placeCard(PlayerCard c)
 	{
 		if (c == null || c.getCardIdx() < 0) return; 
 		deck.add(c);
 	}
-	public void placeDeck(Deck c)
+	public void placeDeck(PlayerDeck c)
 	{
 		while (c.count() > 0) deck.add(c.drawCard());
 	}
@@ -69,11 +69,11 @@ public class Deck implements Serializable{
 	{	// Carnivore, Herbivore, Insectivore, Nectarivore, Flying, 
 		// Cold, Hot, Dry, Wet, Aquatic, Rocky
 		Resources res = ctx.getResources();
-		emptyCard = new Card(-1, "Empty", 
+		emptyCard = new PlayerCard(-1, "Empty", 
 				((BitmapDrawable)res.getDrawable(R.drawable.emptycard)).getBitmap(), 
 				null, CardGroup.BodyPart, 0);
 		
-		cards = new ArrayList<Card>();
+		playerCards = new ArrayList<PlayerCard>();
 		addBodyCard(res, "Wings", R.drawable.wingscard, new CardTag[]{CardTag.Flying}, 1);
 		addBodyCard(res, "Tail fin", R.drawable.tailfincard, new CardTag[]{CardTag.Aquatic}, 0);
 		addBodyCard(res, "Hollow Fur", R.drawable.card1, new CardTag[]{CardTag.Cold}, 0);
@@ -92,26 +92,27 @@ public class Deck implements Serializable{
 		addBodyCard(res, "huh", R.drawable.tailfincard, new CardTag[]{CardTag.Cold}, 0);
 		addBodyCard(res, "you", R.drawable.card1, new CardTag[]{CardTag.Flying}, 1);
 		addBodyCard(res, "me", R.drawable.tailfincard, new CardTag[]{CardTag.Aquatic}, 0);
-		addBodyCard(res, "bees", R.drawable.card1, new CardTag[]{CardTag.Cold}, 0);
+		addBodyCard(res, "bees", R.drawable.card1, new CardTag[]{CardTag.Cold}, 0);		
 	}
+	
 	private static void addBodyCard(Resources res, String title, int resId, CardTag[] tags, int size) throws NotFoundException, IOException
 	{
-		cards.add(new Card(cards.size(), title, 
+		playerCards.add(new PlayerCard(playerCards.size(), title, 
 				((BitmapDrawable)res.getDrawable(resId)).getBitmap(), 
 				tags, CardGroup.BodyPart, size));
 	}
 	
-	public static Card getCardInstance(int idx)
+	public static PlayerCard getCardInstance(int idx)
 	{
 		if (idx < 0)
 			return emptyCard;
-		return cards.get(idx);
+		return playerCards.get(idx);
 	}
 	
 	public JSONArray getJSONArray() {
 		JSONArray arr = new JSONArray();
 		
-		for (Card c : deck) arr.put(c.getCardIdx());
+		for (PlayerCard c : deck) arr.put(c.getCardIdx());
 		
 		return arr;
 	}

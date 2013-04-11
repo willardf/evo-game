@@ -1,7 +1,7 @@
 package com.potato.evolutiongame.game.ai;
 
 import com.potato.evolutiongame.game.GameState;
-import com.potato.evolutiongame.game.cards.Card;
+import com.potato.evolutiongame.game.cards.PlayerCard;
 
 public interface EvoGameAI {
 	/**
@@ -14,6 +14,6 @@ public interface EvoGameAI {
 	 * @param c The card replacing the body part
 	 * @return Index of body part chosen
 	 */
-	public int chooseBodyPart(GameState g, Card c);
+	public int chooseBodyPart(GameState g, PlayerCard c);
 	public void makeMove(GameState gameState) throws Exception;
 }

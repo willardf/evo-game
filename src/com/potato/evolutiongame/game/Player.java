@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.potato.evolutiongame.game.cards.Card;
-import com.potato.evolutiongame.game.cards.Deck;
+import com.potato.evolutiongame.game.cards.PlayerCard;
+import com.potato.evolutiongame.game.cards.PlayerDeck;
 
 public class Player implements Serializable{
 	private static final long serialVersionUID = -7645297394213829127L;
@@ -16,20 +16,20 @@ public class Player implements Serializable{
 	
 	private int population;
 	private Creature board;
-	private ArrayList<Card> hand;
+	private ArrayList<PlayerCard> hand;
 	
 	public Player()
 	{
 		population = STARTING_POPULATION;
-		hand = new ArrayList<Card>();
+		hand = new ArrayList<PlayerCard>();
 		// TODO: Real starting creatures
 		board = new Creature(3);
 	}
 	public Player(JSONObject o) {
 		JSONArray parts = o.getJSONArray("hand");
-		hand = new ArrayList<Card>();
+		hand = new ArrayList<PlayerCard>();
 		for (int i = 0; i < parts.length(); ++i)
-			hand.add(Deck.getCardInstance(parts.getInt(i)));
+			hand.add(PlayerDeck.getCardInstance(parts.getInt(i)));
 		
 		board = new Creature(o.getJSONObject("creature"));
 		population = o.getInt("population");
@@ -41,7 +41,7 @@ public class Player implements Serializable{
 	 * @param index The index to set card c.
 	 * @return Displaced card, if any.
 	 */
-	public Card playBodyCard(Card c, int i)
+	public PlayerCard playBodyCard(PlayerCard c, int i)
 	{
 		return board.setBodyPart(c, i);
 	}
@@ -52,17 +52,17 @@ public class Player implements Serializable{
 	 * @return Card at idx
 	 * @throws IndexOutOfBoundsException When idx is < 0 or > length.
 	 */
-	public Card takeHandCard(int idx) throws IndexOutOfBoundsException
+	public PlayerCard takeHandCard(int idx) throws IndexOutOfBoundsException
 	{
 		if (idx < 0 || idx >= hand.size()) throw new IndexOutOfBoundsException();
 		return hand.remove(idx);
 	}
-	public void addHandCard(Card c) throws InvalidCardException
+	public void addHandCard(PlayerCard c) throws InvalidCardException
 	{
 		if (hand.size() == MAX_CARDS_HAND) throw new InvalidCardException();
 		hand.add(c);
 	}
-	public ArrayList<Card> getHand()
+	public ArrayList<PlayerCard> getHand()
 	{
 		return hand;
 	}
@@ -71,7 +71,7 @@ public class Player implements Serializable{
 		JSONObject o = new JSONObject();
 		
 		JSONArray parts = new JSONArray();
-		for (Card c : hand) parts.put(c.getCardIdx());
+		for (PlayerCard c : hand) parts.put(c.getCardIdx());
 		o.put("hand", parts);
 		
 		o.put("population", population);
@@ -79,10 +79,16 @@ public class Player implements Serializable{
 		
 		return o;
 	}
-	public Card getHandCard(int idx) {
+	public PlayerCard getHandCard(int idx) {
 		return hand.get(idx);
 	}
 	public Creature getCreature() {
 		return board;
+	}
+	public int getPopulation() {
+		return population;
+	}
+	public void changePopulation(int change) {
+		population += change;
 	}
 }
